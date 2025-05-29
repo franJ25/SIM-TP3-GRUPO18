@@ -49,9 +49,7 @@ def simular(conductores_totales, ingreso_diario, costo_operativo, salario, datos
                                                                                          ingreso_diario,
                                                                                          costo_operativo, salario)
         beneficio_acumulado += beneficio
-
-        if j <= dia <= min(i + j - 1, n):
-            fila = {
+        fila = {
                 'Día': dia,
                 'Ausentes': ausentes,
                 'Presentes': presentes,
@@ -62,19 +60,10 @@ def simular(conductores_totales, ingreso_diario, costo_operativo, salario, datos
                 'Beneficio_Diario': beneficio,
                 'Beneficio_Acumulado': beneficio_acumulado
             }
+        if j <= dia <= min(i + j - 1, n):
             filas_a_mostrar.append(fila)
         if dia == n:
-            ultima_fila = {
-                'Día': dia,
-                'Ausentes': ausentes,
-                'Presentes': presentes,
-                'Ingreso': ingreso_total,
-                'Costo_Operativo': costo_operativo,
-                'Costo_Salario': costo_salario,
-                'Costo_Total': costo_total,
-                'Beneficio_Diario': beneficio,
-                'Beneficio_Acumulado': beneficio_acumulado
-            }
+            ultima_fila = fila
     return beneficio_acumulado, filas_a_mostrar, ultima_fila
 
 
