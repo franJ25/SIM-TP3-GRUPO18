@@ -93,11 +93,23 @@ def on_simulate_click(param_entries, ausentismo_entries_list):
     # Rellenar Resumen del Día N
     ultima_fila = resultados['ultima_fila']
     if ultima_fila:
-        summary_data_keys = ['Día', 'Ausentes', 'Presentes', 'Ingreso', 'Costo_Total', 'Beneficio_Diario', 'Beneficio_Acumulado']
+        summary_data_keys = ['Día', 'RND Ausentismo', 'Ausentes', 'Presentes', 'Ingreso', 'Costo_Total', 'Beneficio_Diario', 'Beneficio_Acumulado']
         for row_idx, data_key in enumerate(summary_data_keys):
             label_text = data_key.replace('_', ' ').title() + ":"
             raw_value = ultima_fila.get(data_key, "N/A")
-            value_display = f"{raw_value:,.2f}" if isinstance(raw_value, float) else f"{raw_value:,}"
+
+            # --- CAMBIO REALIZADO: Lógica para truncar el RND en el resumen final ---
+            if data_key == 'RND Ausentismo' and isinstance(raw_value, float):
+                # Truncar el valor: multiplicar por 100, convertir a entero, y dividir por 100.0
+                truncated_val = int(raw_value * 100) / 100.0
+                # Formatear a 2 decimales para que 0.5 se muestre como "0.50"
+                value_display = f"{truncated_val:.2f}"
+            elif isinstance(raw_value, float):
+                # Para otros flotantes, mantener el formato con comas y 2 decimales (redondeado)
+                value_display = f"{raw_value:,.2f}"
+            else:
+                # Para enteros y otros tipos, mantener el formato con comas
+                value_display = f"{raw_value:,}"
 
             lbl_key = ttk.Label(last_day_details_frame, text=label_text, anchor="w")
             lbl_key.grid(row=row_idx, column=0, padx=2, pady=1, sticky=tk.W)
