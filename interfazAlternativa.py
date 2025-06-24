@@ -37,8 +37,8 @@ def on_simulate_click(param_entries, ausentismo_entries_list):
 
         datos_ausentismo_freq = [int(entry.get() or 0) for entry in ausentismo_entries_list]
 
-        if conductores_totales <= 0:
-            messagebox.showerror("Error de Entrada", "La cantidad de conductores debe ser mayor que 0.")
+        if conductores_totales < 20:
+            messagebox.showerror("Error de Entrada", "La cantidad de conductores debe ser mayor o igual que 20.")
             return
         if n_days <= 0:
             messagebox.showerror("Error de Entrada", "N (Número de Días) debe ser mayor que 0.")
@@ -78,11 +78,13 @@ def on_simulate_click(param_entries, ausentismo_entries_list):
     cota_inferior = 0.0
     num_obreros_aus_posibles = [0, 1, 2, 3, 4, 5]
     for i, prob in enumerate(resultados['distribucion']):
+        if prob == 0:
+            continue
         prob_acum = resultados['probabilidades_acumuladas'][i]
-        cota_superior = prob_acum
+        cota_superior = prob_acum - 0.01
         intervalo_rnd = f"{cota_inferior:.2f} - {cota_superior:.2f}"
         if i == len(resultados['distribucion']) - 1:
-            intervalo_rnd = f"{cota_inferior:.2f} a 1.00"
+            intervalo_rnd = f"{cota_inferior:.2f} - 0.99"
 
         row_data = (f"{num_obreros_aus_posibles[i]}", f"{prob:.2f}", f"{prob_acum:.2f}", intervalo_rnd)
         tree_distribucion.insert("", tk.END, values=row_data)
@@ -116,7 +118,11 @@ def imprimir_fila(fila):
     for col_key in COLUMN_ORDER:
         val = fila.get(col_key, "")
         if col_key == 'RND Ausentismo':
-            ordered_values.append(f"{val:.2f}") # Truncado a 2 decimales
+            # --- CAMBIO IMPORTANTE: Truncar en lugar de redondear ---
+            # Multiplica por 100, convierte a entero (corta decimales) y divide de nuevo
+            truncated_val = int(val * 100) / 100.0
+            # Formatea para asegurar que siempre se muestren 2 decimales (e.g., 0.5 -> "0.50")
+            ordered_values.append(f"{truncated_val:.2f}")
         elif isinstance(val, float):
             ordered_values.append(f"{val:,.2f}")
         elif isinstance(val, int):
@@ -128,7 +134,7 @@ def imprimir_fila(fila):
 def setup_gui_layout(app_root):
     """Configura la estructura visual y los widgets de la GUI de Tkinter."""
     global tree_distribucion, tree_filas_simulacion, last_day_details_frame
-    app_root.title("Simulador de Flota v7.0")
+    app_root.title("Simulador de Flota v8.0 - Truncado")
     app_root.geometry("1250x800")
 
     # --- Frame de Entradas (Superior) ---
@@ -173,15 +179,14 @@ def setup_gui_layout(app_root):
     simulate_btn = ttk.Button(app_root, text="Ejecutar Simulación", command=lambda: on_simulate_click(param_entries, ausentismo_entries_list))
     simulate_btn.pack(pady=(0, 10), fill=tk.X, padx=10)
 
-    # --- ÁREA DE RESULTADOS CON LA NUEVA DISTRIBUCIÓN ---
+    # --- ÁREA DE RESULTADOS ---
     output_main_frame = ttk.Frame(app_root)
     output_main_frame.pack(padx=10, pady=(0, 10), fill=tk.BOTH, expand=True)
 
-    # Configurar la grilla principal: 2 columnas, 2 filas
-    output_main_frame.grid_columnconfigure(0, weight=1) # Columna izquierda (Frecuencias + Resumen)
-    output_main_frame.grid_columnconfigure(1, weight=3) # Columna derecha (Filas)
-    output_main_frame.grid_rowconfigure(0, weight=2)    # Fila superior (Tabla de distribución)
-    output_main_frame.grid_rowconfigure(1, weight=1)    # Fila inferior (Resumen día N)
+    output_main_frame.grid_columnconfigure(0, weight=1)
+    output_main_frame.grid_columnconfigure(1, weight=3)
+    output_main_frame.grid_rowconfigure(0, weight=2)
+    output_main_frame.grid_rowconfigure(1, weight=1)
 
     # --- Columna Izquierda, Fila Superior: Tabla de Distribución ---
     dist_frame = ttk.LabelFrame(output_main_frame, text="Tabla de Distribución de Ausentismo")

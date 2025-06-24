@@ -2,19 +2,11 @@ import random
 import interfazAlternativa
 
 
-def calcular_ausentismo(probabilidades_acumuladas, num_obreros_aus):
-    aleatorio = random.random()
+def calcular_ausentismo(aleatorio, probabilidades_acumuladas, num_obreros_aus):
     for indice, prob_acumulada in enumerate(probabilidades_acumuladas):
         if aleatorio < prob_acumulada:
             return num_obreros_aus[indice]
     return num_obreros_aus[-1]
-
-
-def calcular_beneficio_diario(presentes, ingreso_diario, costo_total):
-    ingreso_total = 0
-    if presentes >= 20:
-        ingreso_total = ingreso_diario
-    return ingreso_total - costo_total
 
 
 def calcular_distribucion(datos_ausentismo):
@@ -42,16 +34,18 @@ def simular(conductores_totales, ingreso_diario, costo_operativo, salario, datos
     for dia in range(1, n + 1):
         # Obtener el RND para el ausentismo
         rnd_ausentismo = random.random()
-        ausentes = calcular_ausentismo(probabilidades_acumuladas, [0, 1, 2, 3, 4, 5])
+        ausentes = calcular_ausentismo(rnd_ausentismo, probabilidades_acumuladas, [0, 1, 2, 3, 4, 5])
         presentes = conductores_totales - ausentes
 
         # Calcular columnas
-        ingreso_total = 0
         costo_salario = conductores_totales * salario
         costo_total = costo_operativo + costo_salario
+        ingreso_total = 0
+        if presentes >= 20:
+            ingreso_total = ingreso_diario
 
         # Calcular beneficio diario
-        beneficio = calcular_beneficio_diario(presentes, ingreso_diario, costo_total)
+        beneficio = ingreso_total - costo_total
         beneficio_acumulado += beneficio
         fila = {
                 'Día': dia,
